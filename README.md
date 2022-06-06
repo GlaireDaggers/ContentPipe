@@ -47,7 +47,7 @@ A handful of built-in BuildProcessors are included in the ContentPipe.Extras pro
 
 There are also a couple of extra processors aimed at specific frameworks:
 
-* ContentPipe.FNA.ShaderProcessor takes an input HLSL file and compiles it into DXBC using FXC or an equivalent executable (the example includes an [Effect-Build](https://github.com/GlaireDaggers/Effect-Build/) binary), targeted at games based on the [FNA](https://github.com/FNA-XNA/FNA) framework.
+* ContentPipe.FNA.ShaderProcessor takes an input HLSL file and compiles it into DXBC using FXC or an equivalent executable (the example includes an [Effect-Build](https://github.com/GlaireDaggers/Effect-Build/) binary), targeted at games based on the [FNA](https://github.com/FNA-XNA/FNA) framework. A JSON-formatted metadata file may be used to set the optimization level and change the matrix packing order (see ContentPipe.Examples for a demonstration)
 * ContentPipe.Vulkan.ShaderProcessor takes an input GLSL file and compiles it into SPIR-V using glslangValidator or an equivalent executable, targeted at games running on Vulkan (for example, games built on [MoonWorks](https://gitea.moonside.games/MoonsideGames/MoonWorks.git))
 
 These can be used by your game's content pipeline and can also serve as examples for how to write your own content processors.
