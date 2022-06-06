@@ -34,14 +34,16 @@ A couple of optional arguments may also be specified after the required argument
 
 ## Builder and BuildProcessor
 
-The general architecture of ContentPipe is a Builder which maintains a collection of BuildProcessors. A BuildProcessor is responsible for taking an input file, transforming it, and writing the result to an output destination. A BuildProcessor may also take an input *metadata* file, which can be used to customize the behavior of the BuildProcessor for that file (for example, a texture processor may use the metadata file to specify things like compression formats to use)
+The general architecture of ContentPipe is a Builder which maintains a collection of BuildProcessors. A BuildProcessor is responsible for taking an input file, transforming it, and writing the result to an output destination.
+
+A BuildProcessor may also take an input *metadata* file, which can be used to customize the behavior of the BuildProcessor for that file (for example, a texture processor may use the metadata file to specify things like compression formats to use). The metadata file should sit in the same directory as the file it's for, with the same name as the file (including extension) with ".meta" added to it. For example, the metadata file for a file named "image.png" would be "image.png.meta"
 
 A handful of built-in BuildProcessors are included in the ContentPipe.Extras class:
 
 * CopyProcessor simply copies the file as-is to the destination
 * JsonProcessor takes an input JSON file and re-serializes it as a BSON file in the destination
 * GzipProcessor compresses the input file into a gzipped file in the destination
-* QoiProcessor takes an input image file and re-encodes it as a [QOI image](https://github.com/phoboslab/qoi) in the destination
+* QoiProcessor takes an input image file and re-encodes it as a [QOI image](https://github.com/phoboslab/qoi) in the destination. A JSON-formatted metadata file may be provided to specify color channels & color space (see ContentPipe.Examples for a demonstration)
 
 These can be used by your game's content pipeline and can also serve as examples for how to write your own content processors.
 
@@ -90,3 +92,5 @@ public class MyContentProcessorWithMetadata : BuildProcessor<MyContentProcessorW
   }
 }
 ```
+
+## QoiProcessor Metadata
