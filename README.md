@@ -1,3 +1,92 @@
 # ContentPipe
 
-A simple framework for automating content pipelines for indie games
+A simple framework for automating content pipelines for indie games written in C# / .NET Framework 4.7
+
+ContentPipe aims to provide an extensible basis for automating content pipelines in indie games built on minimal frameworks such as FNA, MoonWorks, Veldrid, etc. in a way that doesn't make too many assumptions about how a game may structure its content, while still providing helpful utilities such as command line arguments, parallel build support, support for clean rebuilds & skipping up to date files, and a handful of built-in content processors.
+
+## Usage
+
+The ContentPipe.Core API is meant to be embedded in your own .NET Framework 4.7 console application. The intended workflow is to call it from your Program.Main function like this:
+
+```csharp
+static int Main(string[] args)
+{
+    var builder = new Builder();
+
+    // add your game's content processors to the builder here
+    builder.AddRule("txt", new CopyProcessor());
+
+    // run the build, returning an error code or 0
+    return ContentPipeAPI.Build(builder);
+}
+```
+
+## Commandline arguments
+
+ContentPipeAPI.Build will parse command line arguments on your behalf. At a minimum, it expects input path and output path to be specified like so: `ContentPipe.Example.exe [src path here] [dest path here]`
+
+A couple of optional arguments may also be specified after the required arguments. These are:
+
+* -threads [n]
+  * Specifies how many simultaneous files may be processed at once. By default, ContentPipe will use the environment processor count, but can be limited using this parameter.
+* -clean
+  * Causes ContentPipe to completely clear the output directory before building. This is useful for performing a clean rebuild of all content.
+
+## Builder and BuildProcessor
+
+The general architecture of ContentPipe is a Builder which maintains a collection of BuildProcessors. A BuildProcessor is responsible for taking an input file, transforming it, and writing the result to an output destination. A BuildProcessor may also take an input *metadata* file, which can be used to customize the behavior of the BuildProcessor for that file (for example, a texture processor may use the metadata file to specify things like compression formats to use)
+
+A handful of built-in BuildProcessors are included in the ContentPipe.Extras class:
+
+* CopyProcessor simply copies the file as-is to the destination
+* JsonProcessor takes an input JSON file and re-serializes it as a BSON file in the destination
+* GzipProcessor compresses the input file into a gzipped file in the destination
+* QoiProcessor takes an input image file and re-encodes it as a [QOI image](https://github.com/phoboslab/qoi) in the destination
+
+These can be used by your game's content pipeline and can also serve as examples for how to write your own content processors.
+
+In general, writing a custom processor looks like this:
+
+```csharp
+public class MyContentProcessor : BuildProcessor
+{
+  // Allows your content processor to return what the output file extension should be for a given input file's extension
+  public override string GetOutputExtension(string inFileExtension)
+  {
+    return "myext";
+  }
+
+  // Allows your content processor to take an input file path, an optional input metadata path (or null if no such file exists), and write the final content to the given output file path
+  public override void Process(string infile, string infileMetadata, string outfile)
+  {
+    // write your custom file processing logic here
+  }
+}
+```
+
+To simplify metadata handling, you may also use the generic version of the BuildProcessor class which uses Newtonsoft.JSON to deserialize a metadata object:
+
+```csharp
+public class MyContentProcessorWithMetadata : BuildProcessor<MyContentProcessorWithMetadata.Data>
+{
+  public struct Data
+  {
+    public int x;
+  }
+
+  // here you return what the default metadata should be if no metadata file is provided
+  public override Data DefaultMetadata => new Data { x = 0 };
+
+  // Allows your content processor to return what the output file extension should be for a given input file's extension
+  public override string GetOutputExtension(string inFileExtension)
+  {
+    return "myext";
+  }
+
+  // Allows your content processor to take an input file path, a metadata object, and write the final content to the given output file path
+  public override void Process(string infile, string outfile, Data metadata)
+  {
+    // write your custom file processing logic here
+  }
+}
+```
