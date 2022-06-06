@@ -23,7 +23,7 @@ static int Main(string[] args)
 
 ## Commandline arguments
 
-ContentPipeAPI.Build will parse command line arguments on your behalf. At a minimum, it expects input path and output path to be specified like so: `ContentPipe.Example.exe [src path here] [dest path here]`
+ContentPipeAPI.Build will parse command line arguments on your behalf. At a minimum, it expects input path and output path to be specified like so: `ContentPipe.Example.exe [src path here] [dest path here]`. It will then recursively iterate all files in the source directory, match them with associated BuildProcessors, and write the output files into the given output directory with the same folder structure
 
 A couple of optional arguments may also be specified after the required arguments. These are:
 
