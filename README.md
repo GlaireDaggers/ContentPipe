@@ -92,3 +92,7 @@ public class MyContentProcessorWithMetadata : BuildProcessor<MyContentProcessorW
   }
 }
 ```
+
+## QoiSharp
+
+The included QoiProcessor class makes use of [QoiSharp](https://github.com/NUlliiON/QoiSharp), a C#/.NET library for handling QOI images. The code has been modified to support .NET Framework 4.7 and can be found in the QoiSharp folder
