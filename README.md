@@ -92,5 +92,3 @@ public class MyContentProcessorWithMetadata : BuildProcessor<MyContentProcessorW
   }
 }
 ```
-
-## QoiProcessor Metadata
