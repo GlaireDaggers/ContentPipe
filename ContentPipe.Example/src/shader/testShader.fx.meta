@@ -1,0 +1,6 @@
+﻿{
+	"optLevel": "O1",
+	"disableValidation": false,
+	"treatWarningsAsErrors": false,
+	"matrixPacking": "Default"
+}

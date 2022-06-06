@@ -1,8 +1,8 @@
-﻿using System;
-using System.IO;
-
-using ContentPipe.Core;
+﻿using ContentPipe.Core;
 using ContentPipe.Extras;
+
+using FNAShaderProcessor = ContentPipe.FNA.ShaderProcessor;
+using VulkanShaderProcessor = ContentPipe.Vulkan.ShaderProcessor;
 
 namespace ContentPipe.Test
 {
@@ -14,6 +14,10 @@ namespace ContentPipe.Test
             builder.AddRule("txt", new CopyProcessor());
             builder.AddRule("png", new QoiProcessor());
             builder.AddRule("json", new JsonProcessor());
+            builder.AddRule("fx", new FNAShaderProcessor("./tool/efb.exe", null));
+            builder.AddRule("vert", new VulkanShaderProcessor("./tool/glslangValidator.exe", null));
+            builder.AddRule("frag", new VulkanShaderProcessor("./tool/glslangValidator.exe", null));
+            builder.AddRule("comp", new VulkanShaderProcessor("./tool/glslangValidator.exe", null));
 
             return ContentPipeAPI.Build(builder);
         }
