@@ -8,7 +8,7 @@ namespace ContentPipe.Vulkan
     /// <summary>
     /// A processor for shader files which invokes a glslangValidator or compatible executable to compile GLSL shaders into SPIR-V for Vulkan games
     /// </summary>
-    public class ShaderProcessor : BuildProcessor
+    public class ShaderProcessor : SingleAssetProcessor
     {
         private readonly string _glslangPath;
         private readonly string[] _includePaths;
@@ -19,12 +19,12 @@ namespace ContentPipe.Vulkan
             _includePaths = includePaths;
         }
 
-        public override string GetOutputExtension(string inFileExtension)
+        protected override string GetOutputExtension(string inFileExtension)
         {
             return inFileExtension + ".spv";
         }
 
-        public override void Process(string infile, string infileMetadata, string outfile)
+        protected override void Process(BuildInputFile inputFile, string outputPath)
         {
             string glslangArgs = "";
 
@@ -37,7 +37,7 @@ namespace ContentPipe.Vulkan
             }
 
             // invoke glslangValidator
-            string cmd = $"{glslangArgs} -V {infile} -o {outfile}";
+            string cmd = $"{glslangArgs} -V {inputFile.filepath} -o {outputPath}";
 
             Process process = new Process();
             ProcessStartInfo startInfo = new ProcessStartInfo();

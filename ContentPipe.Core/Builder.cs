@@ -10,14 +10,6 @@ namespace ContentPipe.Core
     /// </summary>
     public class Builder
     {
-        private struct PendingFile
-        {
-            public string inFile;
-            public string inFileMeta;
-            public string outFile;
-            public BuildProcessor processor;
-        }
-
         private Dictionary<string, BuildProcessor> _rules = new Dictionary<string, BuildProcessor>();
 
         /// <summary>
@@ -49,47 +41,44 @@ namespace ContentPipe.Core
 
         internal int Run(int threadCount, string sourceDirectory, string outDirectory)
         {
-            List<PendingFile> pendingFiles = new List<PendingFile>();
+            Dictionary<BuildProcessor, List<BuildInputFile>> pendingFiles = new Dictionary<BuildProcessor, List<BuildInputFile>>();
             Explore(Path.GetFullPath(sourceDirectory), Path.GetFullPath(outDirectory), pendingFiles);
 
-            int successCount = 0;
-            int errCount = 0;
-            int skipCount = 0;
+            string sepStr = Path.DirectorySeparatorChar.ToString();
+            string altSepStr = Path.AltDirectorySeparatorChar.ToString();
 
-            Parallel.ForEach(pendingFiles, new ParallelOptions() { MaxDegreeOfParallelism = threadCount }, (file) =>
+            if (!sourceDirectory.EndsWith(sepStr) && !sourceDirectory.EndsWith(altSepStr))
             {
-                if (File.Exists(file.outFile))
+                sourceDirectory += sepStr;
+            }
+
+            if (!outDirectory.EndsWith(sepStr) && !outDirectory.EndsWith(altSepStr))
+            {
+                outDirectory += sepStr;
+            }
+
+            var buildOptions = new BuildOptions
+            {
+                inputDirectory = sourceDirectory,
+                outputDirectory = outDirectory,
+                parallelOptions = new ParallelOptions()
                 {
-                    DateTime outTimestamp = File.GetLastWriteTime(file.outFile);
-
-                    if ((!File.Exists(file.inFileMeta) || outTimestamp >= File.GetLastWriteTime(file.inFileMeta)) &&
-                        outTimestamp >= File.GetLastWriteTime(file.inFile))
-                    {
-                        System.Threading.Interlocked.Increment(ref skipCount);
-                        return;
-                    }
+                    MaxDegreeOfParallelism = threadCount
                 }
+            };
 
-                Directory.CreateDirectory(Path.GetDirectoryName(file.outFile));
+            int errCount = 0;
 
-                try
-                {
-                    file.processor.Process(file.inFile, file.inFileMeta, file.outFile);
-                    Console.WriteLine($"{file.inFile} -> {file.outFile}");
-                    System.Threading.Interlocked.Increment(ref successCount);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine($"ERROR: {e.Message} ({file.inFile})");
-                    System.Threading.Interlocked.Increment(ref errCount);
-                }
-            });
+            foreach (var kvp in pendingFiles)
+            {
+                errCount += kvp.Key.Process(kvp.Value.ToArray(), buildOptions);
+            }
 
-            Console.WriteLine($"Build {(errCount == 0 ? "successful" : "failed")} - {successCount} succeeded, {errCount} failed, {skipCount} up-to-date");
+            Console.WriteLine($"BUILD {(errCount == 0 ? "SUCCEEDED" : "FAILED")} - {errCount} error(s)");
             return errCount;
         }
 
-        private void Explore(string sourceDirectory, string outDirectory, List<PendingFile> outPendingFiles)
+        private void Explore(string sourceDirectory, string outDirectory, Dictionary<BuildProcessor, List<BuildInputFile>> outPendingFiles)
         {
             foreach (var file in Directory.GetFiles(sourceDirectory))
             {
@@ -101,12 +90,15 @@ namespace ContentPipe.Core
 
                 if (_rules.TryGetValue(ext, out var processor))
                 {
-                    outPendingFiles.Add(new PendingFile
+                    if (!outPendingFiles.ContainsKey(processor))
                     {
-                        inFile = Path.Combine(sourceDirectory, filename),
-                        inFileMeta = File.Exists(file + ".meta") ? file + ".meta" : null,
-                        outFile = Path.ChangeExtension(Path.Combine(outDirectory, filename), processor.GetOutputExtension(ext)),
-                        processor = processor
+                        outPendingFiles.Add(processor, new List<BuildInputFile>());
+                    }
+
+                    outPendingFiles[processor].Add(new BuildInputFile
+                    {
+                        filepath = Path.Combine(sourceDirectory, filename),
+                        metapath = File.Exists(file + ".meta") ? file + ".meta" : null,
                     });
                 }
                 else
