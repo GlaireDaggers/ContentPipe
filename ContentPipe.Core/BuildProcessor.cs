@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace ContentPipe.Core
@@ -25,6 +26,11 @@ namespace ContentPipe.Core
         /// Settings for Parallel functions
         /// </summary>
         public ParallelOptions parallelOptions;
+
+        /// <summary>
+        /// The current build profile
+        /// </summary>
+        public string buildProfile;
     }
 
     /// <summary>
@@ -140,7 +146,7 @@ namespace ContentPipe.Core
         /// </summary>
         /// <param name="inputFile">The input file</param>
         /// <param name="outputPath">The output path to write to</param>
-        protected abstract void Process(BuildInputFile inputFile, string outputPath);
+        protected abstract void Process(BuildInputFile inputFile, string outputPath, BuildOptions options);
 
         public override int Process(BuildInputFile[] inputFiles, BuildOptions options)
         {
@@ -158,7 +164,7 @@ namespace ContentPipe.Core
                 {
                     try
                     {
-                        Process(x, outpath);
+                        Process(x, outpath, options);
                     }
                     catch (Exception e)
                     {
@@ -184,24 +190,29 @@ namespace ContentPipe.Core
         protected virtual TMetadata DefaultMetadata => default;
 
         /// <summary>
-        /// Deserialize the metadata from the given file
+        /// Deserialize a table of metadata from the given file
         /// </summary>
         /// <param name="path">The path to the meta file</param>
-        /// <returns>The deserialized metadata</returns>
-        protected virtual TMetadata DeserializeMetadata(string path)
+        /// <returns>The metadata table, keyed by build profile</returns>
+        protected virtual Dictionary<string, TMetadata> DeserializeMetadata(string path)
         {
-            return JsonConvert.DeserializeObject<TMetadata>(File.ReadAllText(path));
+            return JsonConvert.DeserializeObject<Dictionary<string, TMetadata>>(File.ReadAllText(path));
         }
 
-        protected abstract void Process(BuildInputFile<TMetadata> inputFile, string outputPath);
+        protected abstract void Process(BuildInputFile<TMetadata> inputFile, string outputPath, BuildOptions options);
 
-        protected override void Process(BuildInputFile inputFile, string outputPath)
+        protected override void Process(BuildInputFile inputFile, string outputPath, BuildOptions options)
         {
             TMetadata meta = DefaultMetadata;
 
             if (!string.IsNullOrEmpty(inputFile.metapath))
             {
-                meta = DeserializeMetadata(inputFile.metapath);
+                var metaTable = DeserializeMetadata(inputFile.metapath);
+                
+                if (!metaTable.TryGetValue(options.buildProfile, out meta))
+                {
+                    metaTable.TryGetValue("Default", out meta);
+                }
             }
 
             var inputWithMeta = new BuildInputFile<TMetadata>
@@ -211,7 +222,7 @@ namespace ContentPipe.Core
                 metadata = meta
             };
 
-            Process(inputWithMeta, outputPath);
+            Process(inputWithMeta, outputPath, options);
         }
     }
 
@@ -316,13 +327,13 @@ namespace ContentPipe.Core
         protected virtual TMetadata DefaultMetadata => default;
 
         /// <summary>
-        /// Deserialize the metadata from the given file
+        /// Deserialize a table of metadata from the given file
         /// </summary>
         /// <param name="path">The path to the meta file</param>
-        /// <returns>The deserialized metadata</returns>
-        protected virtual TMetadata DeserializeMetadata(string path)
+        /// <returns>The metadata table, keyed by build profile</returns>
+        protected virtual Dictionary<string, TMetadata> DeserializeMetadata(string path)
         {
-            return JsonConvert.DeserializeObject<TMetadata>(File.ReadAllText(path));
+            return JsonConvert.DeserializeObject<Dictionary<string, TMetadata>>(File.ReadAllText(path));
         }
 
         /// <summary>
@@ -352,7 +363,12 @@ namespace ContentPipe.Core
                 {
                     try
                     {
-                        meta = DeserializeMetadata(inputFiles[i].metapath);
+                        var metaTable = DeserializeMetadata(inputFiles[i].metapath);
+
+                        if (!metaTable.TryGetValue(options.buildProfile, out meta))
+                        {
+                            metaTable.TryGetValue("Default", out meta);
+                        }
                     }
                     catch(Exception e)
                     {
@@ -409,7 +425,7 @@ namespace ContentPipe.Core
     /// </summary>
     public class CopyProcessor : SingleAssetProcessor
     {
-        protected override void Process(BuildInputFile inputFile, string outputPath)
+        protected override void Process(BuildInputFile inputFile, string outputPath, BuildOptions options)
         {
             File.Copy(inputFile.filepath, outputPath, true);
         }

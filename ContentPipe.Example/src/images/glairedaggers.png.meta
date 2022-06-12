@@ -1,3 +1,5 @@
 ﻿{
-	"textureSheetId": "default"
+	"Default": {
+		"textureSheetId": "default"
+	}
 }

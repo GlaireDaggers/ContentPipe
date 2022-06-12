@@ -16,7 +16,7 @@ namespace ContentPipe.Extras
             return inFileExtension + ".b";
         }
 
-        protected override void Process(BuildInputFile inputFile, string outputPath)
+        protected override void Process(BuildInputFile inputFile, string outputPath, BuildOptions options)
         {
             using (var reader = File.OpenText(inputFile.filepath))
             using (var jsonReader = new JsonTextReader(reader))

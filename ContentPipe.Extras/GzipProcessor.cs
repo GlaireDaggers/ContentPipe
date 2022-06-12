@@ -25,7 +25,7 @@ namespace ContentPipe.Extras
             return inFileExtension + ".gz";
         }
 
-        protected override void Process(BuildInputFile<GzipMetadata> inputFile, string outputPath)
+        protected override void Process(BuildInputFile<GzipMetadata> inputFile, string outputPath, BuildOptions options)
         {
             using (var instream = File.OpenRead(inputFile.filepath))
             using (var outstream = File.OpenWrite(outputPath))

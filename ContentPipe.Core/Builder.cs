@@ -48,7 +48,7 @@ namespace ContentPipe.Core
             }
         }
 
-        internal int Run(int threadCount, string sourceDirectory, string outDirectory)
+        internal int Run(string profile, int threadCount, string sourceDirectory, string outDirectory)
         {
             string sepStr = Path.DirectorySeparatorChar.ToString();
             string altSepStr = Path.AltDirectorySeparatorChar.ToString();
@@ -65,6 +65,7 @@ namespace ContentPipe.Core
 
             var buildOptions = new BuildOptions
             {
+                buildProfile = profile,
                 inputDirectory = sourceDirectory,
                 outputDirectory = outDirectory,
                 parallelOptions = new ParallelOptions()

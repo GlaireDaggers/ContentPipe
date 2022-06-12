@@ -61,7 +61,7 @@ namespace ContentPipe.FNA
             return "fxo";
         }
 
-        protected override void Process(BuildInputFile<ShaderMetadata> inputFile, string outputPath)
+        protected override void Process(BuildInputFile<ShaderMetadata> inputFile, string outputPath, BuildOptions options)
         {
             string fxcArgs = "";
 

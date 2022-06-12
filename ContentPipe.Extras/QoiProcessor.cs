@@ -80,7 +80,7 @@ namespace ContentPipe.Extras
             return "qoi";
         }
 
-        protected override void Process(BuildInputFile<QoiMetadata> inputFile, string outputPath)
+        protected override void Process(BuildInputFile<QoiMetadata> inputFile, string outputPath, BuildOptions options)
         {
             using (var srcImage = Image.FromFile(inputFile.filepath))
             using (var bmp = new Bitmap(srcImage))

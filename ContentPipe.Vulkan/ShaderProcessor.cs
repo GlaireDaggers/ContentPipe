@@ -24,7 +24,7 @@ namespace ContentPipe.Vulkan
             return inFileExtension + ".spv";
         }
 
-        protected override void Process(BuildInputFile inputFile, string outputPath)
+        protected override void Process(BuildInputFile inputFile, string outputPath, BuildOptions options)
         {
             string glslangArgs = "";
 

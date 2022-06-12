@@ -14,6 +14,7 @@ namespace ContentPipe.Core
             var argParser = new ProgramArguments();
             argParser.AddRequiredArgument("srcdir", 1, "Source directory containing files to process");
             argParser.AddRequiredArgument("dstdir", 1, "Output directory to write files to");
+            argParser.AddOptionalArgument("profile", 1, "Set build profile name (default is \"Default\")");
             argParser.AddOptionalArgument("threads", 1, "Limit number of concurrent processes (must be >0) (default is machine processor count)");
             argParser.AddOptionalArgument("clean", 0, "Clean directory before building");
 
@@ -23,6 +24,7 @@ namespace ContentPipe.Core
                 string srcdir = argTable["srcdir"][0];
                 string dstdir = argTable["dstdir"][0];
                 int threads = Environment.ProcessorCount;
+                string buildProfile = "Default";
 
                 if (argTable.TryGetValue("threads", out var threadstr) && !int.TryParse(threadstr[0], out threads) || threads <= 0)
                 {
@@ -37,8 +39,13 @@ namespace ContentPipe.Core
                     builder.Clean(dstdir);
                 }
 
-                Console.WriteLine($"Building using {threads} processes");
-                return builder.Run(threads, srcdir, dstdir);
+                if (argTable.TryGetValue("profile", out var profilestr))
+                {
+                    buildProfile = profilestr[0];
+                }
+
+                Console.WriteLine($"Building {buildProfile} using {threads} processes");
+                return builder.Run(buildProfile, threads, srcdir, dstdir);
             }
             catch (ProgramArgumentException e)
             {
