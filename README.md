@@ -27,6 +27,8 @@ ContentPipeAPI.Build will parse command line arguments on your behalf. At a mini
 
 A couple of optional arguments may also be specified after the required arguments. These are:
 
+* -profile [n]
+  * Sets the current build profile. This will be used by the included JSON metadata parsers to select metadata from a table keyed by build profile. If not set, "Default" will be used.
 * -threads [n]
   * Specifies how many simultaneous files may be processed at once. By default, ContentPipe will use the environment processor count, but can be limited using this parameter.
 * -clean
