@@ -66,7 +66,7 @@ public class MyContentProcessor : SingleAssetProcessor
   }
 
   // Allows your content processor to take an input file, and write the final content to the given output file path
-  public override void Process(BuildInputFile inputFile, string outFilePath)
+  public override void Process(BuildInputFile inputFile, string outFilePath, BuildOptions options)
   {
     // write your custom file processing logic here
   }
@@ -93,7 +93,7 @@ public class MyContentProcessorWithMetadata : SingleAssetProcessor<MyContentProc
   }
 
   // Allows your content processor to take an input file path & a metadata object, and write the final content to the given output file path
-  public override void Process(BuildInputFile<Data> inputFile, string outFilePath)
+  public override void Process(BuildInputFile<Data> inputFile, string outFilePath, BuildOptions options)
   {
     // write your custom file processing logic here
   }
