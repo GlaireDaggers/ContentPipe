@@ -9,18 +9,18 @@ namespace ContentPipe.Extras
     /// <summary>
     /// Content processor which converts source JSON files into equivalent BSON files
     /// </summary>
-    public class JsonProcessor : BuildProcessor
+    public class JsonProcessor : SingleAssetProcessor
     {
-        public override string GetOutputExtension(string inFileExtension)
+        protected override string GetOutputExtension(string inFileExtension)
         {
             return inFileExtension + ".b";
         }
 
-        public override void Process(string infile, string infileMetadata, string outfile)
+        protected override void Process(BuildInputFile inputFile, string outputPath)
         {
-            using (var reader = File.OpenText(infile))
+            using (var reader = File.OpenText(inputFile.filepath))
             using (var jsonReader = new JsonTextReader(reader))
-            using (var outstream = File.OpenWrite(outfile))
+            using (var outstream = File.OpenWrite(outputPath))
             using (var writer = new BsonDataWriter(outstream))
             {
                 writer.WriteToken(jsonReader);

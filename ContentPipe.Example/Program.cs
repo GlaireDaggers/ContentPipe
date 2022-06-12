@@ -11,8 +11,10 @@ namespace ContentPipe.Test
         static int Main(string[] args)
         {
             var builder = new Builder();
-            builder.AddRule("txt", new CopyProcessor());
-            builder.AddRule("png", new QoiProcessor());
+            //builder.AddRule("txt", new CopyProcessor());
+            builder.AddRule("txt", new ArchiveProcessor("data.zip"));
+            //builder.AddRule("png", new QoiProcessor());
+            builder.AddRule("png", new TexturePackerProcessor("img"));
             builder.AddRule("json", new JsonProcessor());
             builder.AddRule("fx", new FNAShaderProcessor("./tool/efb.exe", null));
             builder.AddRule("vert", new VulkanShaderProcessor("./tool/glslangValidator.exe", null));

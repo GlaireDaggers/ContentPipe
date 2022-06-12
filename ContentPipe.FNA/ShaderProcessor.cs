@@ -11,7 +11,7 @@ namespace ContentPipe.FNA
     /// <summary>
     /// A processor for shader files which invokes an fxc or compatible executable to compile HLSL shaders into DXBC for FNA games
     /// </summary>
-    public class ShaderProcessor : BuildProcessor<ShaderProcessor.ShaderMetadata>
+    public class ShaderProcessor : SingleAssetProcessor<ShaderProcessor.ShaderMetadata>
     {
         public enum ShaderOptimizationLevel
         {
@@ -56,12 +56,12 @@ namespace ContentPipe.FNA
             matrixPacking = ShaderMatrixPacking.ColumnOrder,
         };
 
-        public override string GetOutputExtension(string inFileExtension)
+        protected override string GetOutputExtension(string inFileExtension)
         {
             return "fxo";
         }
 
-        protected override void Process(string infile, string outfile, ShaderMetadata meta)
+        protected override void Process(BuildInputFile<ShaderMetadata> inputFile, string outputPath)
         {
             string fxcArgs = "";
 
@@ -83,19 +83,19 @@ namespace ContentPipe.FNA
                 fxcArgs += " /WX";
             }
 
-            if (meta.matrixPacking == ShaderMatrixPacking.ColumnOrder)
+            if (inputFile.metadata.matrixPacking == ShaderMatrixPacking.ColumnOrder)
             {
                 fxcArgs += " /Zpc";
             }
-            else if(meta.matrixPacking == ShaderMatrixPacking.RowOrder)
+            else if (inputFile.metadata.matrixPacking == ShaderMatrixPacking.RowOrder)
             {
                 fxcArgs += " /Zpr";
             }
 
-            fxcArgs += $" /{meta.optLevel}";
+            fxcArgs += $" /{inputFile.metadata.optLevel}";
 
             // invoke FXC
-            string cmd = $"{fxcArgs} {infile} {outfile}";
+            string cmd = $"{fxcArgs} {inputFile.filepath} {outputPath}";
 
             Process process = new Process();
             ProcessStartInfo startInfo = new ProcessStartInfo();
