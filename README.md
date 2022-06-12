@@ -14,7 +14,7 @@ static int Main(string[] args)
     var builder = new Builder();
 
     // add your game's content processors to the builder here
-    builder.AddRule("txt", new CopyProcessor());
+    builder.AddRule("*.txt", new CopyProcessor());
 
     // run the build, returning an error code or 0
     return ContentPipeAPI.Build(builder);

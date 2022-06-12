@@ -10,17 +10,26 @@ namespace ContentPipe.Core
     /// </summary>
     public class Builder
     {
-        private Dictionary<string, BuildProcessor> _rules = new Dictionary<string, BuildProcessor>();
+        private struct BuildRule
+        {
+            public string searchPattern;
+            public BuildProcessor processor;
+        }
+
+        private List<BuildRule> _rules = new List<BuildRule>();
 
         /// <summary>
-        /// Add a content processor for the given file extension
+        /// Add a content processor for the given search pattern
         /// </summary>
-        /// <param name="extension">The file extension</param>
-        /// <param name="processor">The processor to register for this extension</param>
-        public void AddRule(string extension, BuildProcessor processor)
+        /// <param name="searchPattern">The search pattern</param>
+        /// <param name="processor">The processor to register for files matching this search pattern</param>
+        public void AddRule(string searchPattern, BuildProcessor processor)
         {
-            if (!extension.StartsWith(".")) extension = "." + extension;
-            _rules.Add(extension, processor);
+            _rules.Add(new BuildRule
+            {
+                searchPattern = searchPattern,
+                processor = processor
+            });
         }
 
         internal void Clean(string outDirectory)
@@ -41,9 +50,6 @@ namespace ContentPipe.Core
 
         internal int Run(int threadCount, string sourceDirectory, string outDirectory)
         {
-            Dictionary<BuildProcessor, List<BuildInputFile>> pendingFiles = new Dictionary<BuildProcessor, List<BuildInputFile>>();
-            Explore(Path.GetFullPath(sourceDirectory), Path.GetFullPath(outDirectory), pendingFiles);
-
             string sepStr = Path.DirectorySeparatorChar.ToString();
             string altSepStr = Path.AltDirectorySeparatorChar.ToString();
 
@@ -69,49 +75,32 @@ namespace ContentPipe.Core
 
             int errCount = 0;
 
-            foreach (var kvp in pendingFiles)
+            foreach (var rule in _rules)
             {
-                errCount += kvp.Key.Process(kvp.Value.ToArray(), buildOptions);
+                var files = Directory.GetFiles(sourceDirectory, rule.searchPattern, SearchOption.AllDirectories);
+                List<BuildInputFile> inputFiles = new List<BuildInputFile>();
+
+                for (int i = 0; i < files.Length; i++)
+                {
+                    // always skip meta files
+                    if (files[i].EndsWith(".meta")) continue;
+
+                    string metapath = files[i] + ".meta";
+
+                    inputFiles.Add(new BuildInputFile
+                    {
+                        filepath = files[i],
+                        metapath = File.Exists(metapath) ? metapath : null 
+                    });
+                }
+
+                if (inputFiles.Count == 0) continue;
+
+                rule.processor.Process(inputFiles.ToArray(), buildOptions);
             }
 
             Console.WriteLine($"BUILD {(errCount == 0 ? "SUCCEEDED" : "FAILED")} - {errCount} error(s)");
             return errCount;
-        }
-
-        private void Explore(string sourceDirectory, string outDirectory, Dictionary<BuildProcessor, List<BuildInputFile>> outPendingFiles)
-        {
-            foreach (var file in Directory.GetFiles(sourceDirectory))
-            {
-                var filename = Path.GetFileName(file);
-                var ext = Path.GetExtension(file);
-
-                // always skip meta files
-                if (ext == ".meta") continue;
-
-                if (_rules.TryGetValue(ext, out var processor))
-                {
-                    if (!outPendingFiles.ContainsKey(processor))
-                    {
-                        outPendingFiles.Add(processor, new List<BuildInputFile>());
-                    }
-
-                    outPendingFiles[processor].Add(new BuildInputFile
-                    {
-                        filepath = Path.Combine(sourceDirectory, filename),
-                        metapath = File.Exists(file + ".meta") ? file + ".meta" : null,
-                    });
-                }
-                else
-                {
-                    Console.WriteLine("Unknown file extension: " + file + ", skipping");
-                }
-            }
-
-            foreach (var subdir in Directory.GetDirectories(sourceDirectory))
-            {
-                var folderName = subdir.Substring(sourceDirectory.Length + 1);
-                Explore(Path.Combine(sourceDirectory, folderName), Path.Combine(outDirectory, folderName), outPendingFiles);
-            }
         }
     }
 }
