@@ -12,7 +12,7 @@ namespace ContentPipe.Core
     {
         private struct BuildRule
         {
-            public string searchPattern;
+            public Matcher matcher;
             public BuildProcessor processor;
         }
 
@@ -25,9 +25,30 @@ namespace ContentPipe.Core
         /// <param name="processor">The processor to register for files matching this search pattern</param>
         public void AddRule(string searchPattern, BuildProcessor processor)
         {
+            AddRule(new Matcher(searchPattern), processor);
+        }
+
+        /// <summary>
+        /// Add a content processor for the given search pattern
+        /// </summary>
+        /// <param name="searchPattern">The search pattern</param>
+        /// <param name="searchOption">The directory search option</param>
+        /// <param name="processor">The processor to register for files matching this search pattern</param>
+        public void AddRule(string searchPattern, SearchOption searchOption, BuildProcessor processor)
+        {
+            AddRule(new Matcher(searchPattern, null, searchOption), processor);
+        }
+
+        /// <summary>
+        /// Add a content processor for the given search pattern
+        /// </summary>
+        /// <param name="matcher">The matcher to use to match input files</param>
+        /// <param name="processor">The processor to register for files matching this search pattern</param>
+        public void AddRule(Matcher matcher, BuildProcessor processor)
+        {
             _rules.Add(new BuildRule
             {
-                searchPattern = searchPattern,
+                matcher = matcher,
                 processor = processor
             });
         }
@@ -50,19 +71,6 @@ namespace ContentPipe.Core
 
         internal int Run(string profile, int threadCount, string sourceDirectory, string outDirectory)
         {
-            string sepStr = Path.DirectorySeparatorChar.ToString();
-            string altSepStr = Path.AltDirectorySeparatorChar.ToString();
-
-            if (!sourceDirectory.EndsWith(sepStr) && !sourceDirectory.EndsWith(altSepStr))
-            {
-                sourceDirectory += sepStr;
-            }
-
-            if (!outDirectory.EndsWith(sepStr) && !outDirectory.EndsWith(altSepStr))
-            {
-                outDirectory += sepStr;
-            }
-
             var buildOptions = new BuildOptions
             {
                 buildProfile = profile,
@@ -78,7 +86,7 @@ namespace ContentPipe.Core
 
             foreach (var rule in _rules)
             {
-                var files = Directory.GetFiles(sourceDirectory, rule.searchPattern, SearchOption.AllDirectories);
+                var files = rule.matcher.Match(sourceDirectory);
                 List<BuildInputFile> inputFiles = new List<BuildInputFile>();
 
                 for (int i = 0; i < files.Length; i++)
@@ -100,7 +108,6 @@ namespace ContentPipe.Core
                 rule.processor.Process(inputFiles.ToArray(), buildOptions);
             }
 
-            Console.WriteLine($"BUILD {(errCount == 0 ? "SUCCEEDED" : "FAILED")} - {errCount} error(s)");
             return errCount;
         }
     }

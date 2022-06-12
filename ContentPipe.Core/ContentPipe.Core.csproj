@@ -46,6 +46,7 @@
   <ItemGroup>
     <Compile Include="BuildProcessor.cs" />
     <Compile Include="Builder.cs" />
+    <Compile Include="Matcher.cs" />
     <Compile Include="ProgramArguments.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ContentPipeAPI.cs" />

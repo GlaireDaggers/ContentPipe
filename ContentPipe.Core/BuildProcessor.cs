@@ -85,12 +85,27 @@ namespace ContentPipe.Core
         public abstract int Process(BuildInputFile[] inputFiles, BuildOptions options);
 
         /// <summary>
+        /// Normalize directory string, replacing path separators & ensuring an appending path separator if appropriate
+        /// </summary>
+        public static string NormalizeDirectoryString(string pathstr)
+        {
+            pathstr = pathstr.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+            
+            if (!pathstr.EndsWith(Path.DirectorySeparatorChar.ToString()))
+            {
+                pathstr += Path.DirectorySeparatorChar;
+            }
+
+            return pathstr;
+        }
+
+        /// <summary>
         /// Make a path relative to another
         /// </summary>
         /// <param name="filepath">The full path</param>
         /// <param name="relativeTo">The path to make it relative to</param>
         /// <returns>The relative path</returns>
-        protected static string MakeRelativePath(string filepath, string relativeTo)
+        public static string MakeRelativePath(string filepath, string relativeTo)
         {
             Uri fullpath = new Uri(Path.GetFullPath(filepath));
             Uri relpath = new Uri(Path.GetFullPath(relativeTo));
@@ -104,7 +119,7 @@ namespace ContentPipe.Core
         /// <param name="srcDir">The input directory</param>
         /// <param name="outDir">The output directory</param>
         /// <returns>The destination path for the file</returns>
-        protected static string GetOutputPath(string filepath, string srcDir, string outDir)
+        public static string GetOutputPath(string filepath, string srcDir, string outDir)
         {
             return Path.Combine(outDir, MakeRelativePath(filepath, srcDir));
         }
@@ -116,7 +131,7 @@ namespace ContentPipe.Core
         /// <param name="metapath">The file's metadata path</param>
         /// <param name="outpath">The output file to compare against</param>
         /// <returns>True if either the input file or its metadata file are newer, false otherwise</returns>
-        protected static bool CheckFileDirty(string filepath, string metapath, string outpath)
+        public static bool CheckFileDirty(string filepath, string metapath, string outpath)
         {
             bool inFileDirty = File.GetLastWriteTime(filepath) > File.GetLastWriteTime(outpath);
             bool inMetaDirty = File.Exists(metapath) && File.GetLastWriteTime(metapath) > File.GetLastWriteTime(outpath);
@@ -285,6 +300,7 @@ namespace ContentPipe.Core
                 {
                     try
                     {
+                        Directory.CreateDirectory(Path.GetDirectoryName(x.outputfile));
                         ProcessBatch(x, options);
                     }
                     catch(Exception e)
@@ -406,6 +422,7 @@ namespace ContentPipe.Core
                 {
                     try
                     {
+                        Directory.CreateDirectory(Path.GetDirectoryName(x.outputfile));
                         ProcessBatch(x, options);
                     }
                     catch (Exception e)

@@ -1,5 +1,6 @@
 ﻿{
 	"Default": {
-		"textureSheetId": "default"
+		"channels": "Rgb",
+		"colorSpace": "Linear"
 	}
 }
