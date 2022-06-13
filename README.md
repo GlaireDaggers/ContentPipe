@@ -16,6 +16,7 @@ It's a very good read. In general, the ways this apply to ContentPipe are:
 * The game code does not care or know anything about ContentPipe, just that it gets the content formats it needs.
 * ContentPipe should allow both 1:1 input to output relationships as well as many-to-one input to output relationships as easy as possible. This makes it possible to perform both simple content transformations as well as more advanced cases like automatic texture packing.
 * It should be simple to perform arbitrary post-processing on the built content files. For instance, content folders can be zipped up and placed in the output directory.
+* ContentPipe should provide a simple CLI interface which makes it possible to integrate with other tools.
 
 ## Usage
 
