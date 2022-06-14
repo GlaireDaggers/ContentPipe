@@ -32,6 +32,11 @@ namespace ContentPipe.Extras
 
         protected override void ProcessBatch(Batch batch, BuildOptions options)
         {
+            if (File.Exists(batch.outputfile))
+            {
+                File.Delete(batch.outputfile);
+            }
+
             using (ZipArchive archive = ZipFile.Open(batch.outputfile, ZipArchiveMode.Create))
             {
                 foreach (var inputfile in batch.inputfiles)
