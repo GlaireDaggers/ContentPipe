@@ -4,6 +4,20 @@ A simple framework for automating content pipelines for indie games written in C
 
 ContentPipe aims to provide an extensible basis for automating content pipelines in indie games built on minimal frameworks such as FNA, MoonWorks, Veldrid, etc. in a way that doesn't make too many assumptions about how a game may structure its content, while still providing helpful utilities such as command line arguments, parallel build support, support for clean rebuilds & skipping up to date files, and a handful of built-in content processors.
 
+## Motivation
+
+A lot of ContentPipe's design has been motivated by this post:
+
+[The XNA Content Pipeline Is Bad and You Shouldn't Use It](https://flibitijibibo.com/xnacontent.html)
+
+It's a very good read. In general, the ways this apply to ContentPipe are:
+
+* ContentPipe does not care or know anything about the game code except what formats it consumes.
+* The game code does not care or know anything about ContentPipe, just that it gets the content formats it needs.
+* ContentPipe should allow both 1:1 input to output relationships as well as many-to-one input to output relationships as easy as possible. This makes it possible to perform both simple content transformations as well as more advanced cases like automatic texture packing.
+* It should be simple to perform arbitrary post-processing on the built content files. For instance, content folders can be zipped up and placed in the output directory.
+* ContentPipe should provide a simple CLI interface which makes it possible to integrate with other tools.
+
 ## Usage
 
 The ContentPipe.Core API is meant to be embedded in your own .NET Framework 4.7 console application. The intended workflow is to call it from your Program.Main function like this:
