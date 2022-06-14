@@ -99,13 +99,13 @@ namespace ContentPipe.Core
                     inputFiles.Add(new BuildInputFile
                     {
                         filepath = files[i],
-                        metapath = File.Exists(metapath) ? metapath : null 
+                        metapath = File.Exists(metapath) ? metapath : null
                     });
                 }
 
                 if (inputFiles.Count == 0) continue;
 
-                rule.processor.Process(inputFiles.ToArray(), buildOptions);
+                errCount += rule.processor.Process(inputFiles.ToArray(), buildOptions);
             }
 
             return errCount;
