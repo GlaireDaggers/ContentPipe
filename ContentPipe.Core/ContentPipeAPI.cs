@@ -19,6 +19,7 @@ namespace ContentPipe.Core
             argParser.AddOptionalArgument("profile", 1, "Set build profile name (default is \"Default\")");
             argParser.AddOptionalArgument("threads", 1, "Limit number of concurrent processes (must be >0) (default is machine processor count)");
             argParser.AddOptionalArgument("clean", 0, "Clean directory before building");
+            argParser.AddOptionalArgument("idir", 1, "Override intermediate build directory (default is \"intermediate\" folder in same directory as srcdir)");
 
             try
             {
@@ -27,7 +28,12 @@ namespace ContentPipe.Core
                 string dstdir = Path.GetFullPath(argTable["dstdir"][0]);
                 int threads = Environment.ProcessorCount;
                 string buildProfile = "Default";
-                string intermediateDir = Path.Combine(Directory.GetParent(srcdir).FullName, "intermediate");
+                string intermediateDir = Path.Combine(Directory.GetParent(srcdir.TrimEnd('/', '\\')).FullName, "intermediate");
+
+                if (argTable.TryGetValue("idir", out var objdir))
+                {
+                    intermediateDir = argTable["idir"][0];
+                }
 
                 srcdir = BuildProcessor.NormalizeDirectoryString(srcdir);
                 dstdir = BuildProcessor.NormalizeDirectoryString(dstdir);
