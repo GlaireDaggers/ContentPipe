@@ -85,7 +85,7 @@ namespace ContentPipe.Core
                         try
                         {
                             Directory.CreateDirectory(Path.GetDirectoryName(outpath));
-                            File.Copy(f, outpath);
+                            File.Copy(f, outpath, true);
                         }
                         catch(IOException e)
                         {
