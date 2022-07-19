@@ -50,6 +50,7 @@ namespace ContentPipe.Core
                 {
                     Console.WriteLine("Cleaning output directory");
                     builder.Clean(dstdir);
+                    builder.Clean(intermediateDir);
                 }
 
                 if (argTable.TryGetValue("profile", out var profilestr))
