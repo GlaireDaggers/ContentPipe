@@ -5,8 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using StbRectPackSharp;
-using System.Drawing;
-using System.Drawing.Imaging;
+using StbImageSharp;
 using QoiSharp;
 using QoiSharp.Codec;
 using Newtonsoft.Json;
@@ -33,6 +32,72 @@ namespace ContentPipe.Extras
         public struct Metadata
         {
             public string textureSheetId;
+        }
+
+        private struct Color32
+        {
+            public byte R;
+            public byte G;
+            public byte B;
+            public byte A;
+        }
+
+        private class AtlasImage
+        {
+            public Color32[] pixels;
+            public int width;
+            public int height;
+
+            public AtlasImage(int width, int height)
+            {
+                this.width = width;
+                this.height = height;
+                pixels = new Color32[width * height];
+            }
+
+            public AtlasImage(ImageResult image) : this(image.Width, image.Height)
+            {
+                for (int i = 0; i < pixels.Length; i++)
+                {
+                    int srcIdx = i * 4;
+                    pixels[i] = new Color32
+                    {
+                        R = image.Data[srcIdx],
+                        G = image.Data[srcIdx + 1],
+                        B = image.Data[srcIdx + 2],
+                        A = image.Data[srcIdx + 3],
+                    };
+                }
+            }
+
+            public void Blit(AtlasImage image, int x, int y)
+            {
+                for (int scan = 0; scan < image.height; scan++)
+                {
+                    Array.Copy(image.pixels, scan * image.width, pixels, (scan * width) + x, image.width);
+                }
+            }
+
+            public ImageResult ToImageResult()
+            {
+                ImageResult result = new ImageResult();
+                result.Width = width;
+                result.Height = height;
+                result.SourceComp = ColorComponents.RedGreenBlueAlpha;
+                result.Comp = ColorComponents.RedGreenBlueAlpha;
+                result.Data = new byte[width * height * 4];
+
+                for (int i = 0; i < pixels.Length; i++)
+                {
+                    int dstIdx = i * 4;
+                    result.Data[dstIdx++] = pixels[i].R;
+                    result.Data[dstIdx++] = pixels[i].G;
+                    result.Data[dstIdx++] = pixels[i].B;
+                    result.Data[dstIdx++] = pixels[i].A;
+                }
+
+                return result;
+            }
         }
 
         protected override Metadata DefaultMetadata => new Metadata { textureSheetId = "default" };
@@ -75,12 +140,15 @@ namespace ContentPipe.Extras
 
         protected override void ProcessBatch(Batch batch, BuildOptions options)
         {
-            Image[] imgArray = new Image[batch.inputfiles.Length];
+            AtlasImage[] imgArray = new AtlasImage[batch.inputfiles.Length];
 
             // load all input images
             for (int i = 0; i < batch.inputfiles.Length; i++)
             {
-                imgArray[i] = Image.FromFile(batch.inputfiles[i].filepath);
+                using (var fs = File.OpenRead(batch.inputfiles[i].filepath))
+                {
+                    imgArray[i] = new AtlasImage(ImageResult.FromStream(fs, ColorComponents.RedGreenBlueAlpha));
+                }
             }
 
             // pack image rects
@@ -88,7 +156,7 @@ namespace ContentPipe.Extras
 
             for (int i = 0; i < imgArray.Length; i++)
             {
-                PackerRectangle pr = packer.PackRect(imgArray[i].Width, imgArray[i].Height, i);
+                PackerRectangle pr = packer.PackRect(imgArray[i].width, imgArray[i].height, i);
 
                 while (pr == null)
                 {
@@ -108,20 +176,17 @@ namespace ContentPipe.Extras
                     packer = newPacker;
 
                     // try again
-                    pr = packer.PackRect(imgArray[i].Width, imgArray[i].Height, i);
+                    pr = packer.PackRect(imgArray[i].width, imgArray[i].height, i);
                 }
             }
 
             // create atlas & blit images into it
-            Bitmap atlasBmp = new Bitmap(packer.Width, packer.Height, PixelFormat.Format32bppArgb);
-            Graphics g = Graphics.FromImage(atlasBmp);
+            AtlasImage atlas = new AtlasImage(packer.Width, packer.Height);
 
             foreach (var packedRect in packer.PackRectangles)
             {
-                Rectangle srcRect = new Rectangle(0, 0, packedRect.Width, packedRect.Height);
-                Rectangle dstRect = new Rectangle(packedRect.X, packedRect.Y, packedRect.Width, packedRect.Height);
-                Image img = imgArray[(int)packedRect.Data];
-                g.DrawImage(img, dstRect, srcRect, GraphicsUnit.Pixel);
+                AtlasImage img = imgArray[(int)packedRect.Data];
+                atlas.Blit(img, packedRect.X, packedRect.Y);
             }
 
             // also build atlas data
@@ -136,15 +201,7 @@ namespace ContentPipe.Extras
             }
 
             // now convert into QoiImage
-            QoiImage qoiImage = QoiProcessor.BmpToQoiImage(atlasBmp, Channels.RgbWithAlpha, ColorSpace.SRgb);
-
-            // we don't need atlasBmp or any of the original images anymore
-            atlasBmp.Dispose();
-
-            foreach (var img in imgArray)
-            {
-                img.Dispose();
-            }
+            QoiImage qoiImage = QoiProcessor.ToQoiImage(atlas.ToImageResult(), Channels.RgbWithAlpha, ColorSpace.SRgb);
 
             // encode to output
             using (var outstream = File.OpenWrite(batch.outputfile))
