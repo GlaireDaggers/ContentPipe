@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.1;net5.0;net6.0</TargetFrameworks>
+    <LangVersion>7.3</LangVersion>
+
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ContentPipe.Core\ContentPipe.Core.NETCore.csproj"/>
+    <ProjectReference Include="..\QoiSharp\QoiSharp.NETCore.csproj"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.3-beta1"/>
+    <PackageReference Include="StbImageSharp" Version="2.27.13"/>
+    <PackageReference Include="StbRectPackSharp" Version="1.0.4"/>
+  </ItemGroup>
+
+</Project>
