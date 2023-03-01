@@ -303,7 +303,7 @@ namespace ContentPipe.Core
                         Directory.CreateDirectory(Path.GetDirectoryName(x.outputfile));
                         ProcessBatch(x, options);
                     }
-                    catch(Exception e)
+                    catch
                     {
                         // TODO: should this count as one error per input file, or just one error per batch?
                         Interlocked.Increment(ref errCount);
@@ -425,7 +425,7 @@ namespace ContentPipe.Core
                         Directory.CreateDirectory(Path.GetDirectoryName(x.outputfile));
                         ProcessBatch(x, options);
                     }
-                    catch (Exception e)
+                    catch
                     {
                         // TODO: should this count as one error per input file, or just one error per batch?
                         Interlocked.Increment(ref errCount);

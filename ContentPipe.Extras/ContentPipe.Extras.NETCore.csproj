@@ -5,17 +5,19 @@
     <LangVersion>7.3</LangVersion>
 
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+
+    <Platforms>AnyCPU;x64;x86</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ContentPipe.Core\ContentPipe.Core.NETCore.csproj"/>
-    <ProjectReference Include="..\QoiSharp\QoiSharp.NETCore.csproj"/>
+    <ProjectReference Include="..\ContentPipe.Core\ContentPipe.Core.NETCore.csproj" />
+    <ProjectReference Include="..\QoiSharp\QoiSharp.NETCore.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.3-beta1"/>
-    <PackageReference Include="StbImageSharp" Version="2.27.13"/>
-    <PackageReference Include="StbRectPackSharp" Version="1.0.4"/>
+    <PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.3-beta1" />
+    <PackageReference Include="StbImageSharp" Version="2.27.13" />
+    <PackageReference Include="StbRectPackSharp" Version="1.0.4" />
   </ItemGroup>
 
 </Project>

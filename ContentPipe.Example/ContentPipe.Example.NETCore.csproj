@@ -6,13 +6,15 @@
     <Nullable>enable</Nullable>
 
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+
+    <Platforms>AnyCPU;x64;x86</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ContentPipe.Core\ContentPipe.Core.NETCore.csproj"/>
-    <ProjectReference Include="..\ContentPipe.Extras\ContentPipe.Extras.NETCore.csproj"/>
-    <ProjectReference Include="..\ContentPipe.FNA\ContentPipe.FNA.NETCore.csproj"/>
-    <ProjectReference Include="..\ContentPipe.Vulkan\ContentPipe.Vulkan.NETCore.csproj"/>
+    <ProjectReference Include="..\ContentPipe.Core\ContentPipe.Core.NETCore.csproj" />
+    <ProjectReference Include="..\ContentPipe.Extras\ContentPipe.Extras.NETCore.csproj" />
+    <ProjectReference Include="..\ContentPipe.FNA\ContentPipe.FNA.NETCore.csproj" />
+    <ProjectReference Include="..\ContentPipe.Vulkan\ContentPipe.Vulkan.NETCore.csproj" />
   </ItemGroup>
 
 </Project>
