@@ -1,12 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;net5</TargetFrameworks>
-    <LangVersion>7.3</LangVersion>
+    <TargetFrameworks>net8.0</TargetFrameworks>
     <RootNamespace>QoiSharp</RootNamespace>
-
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-
     <Platforms>AnyCPU;x64;x86</Platforms>
   </PropertyGroup>
 
